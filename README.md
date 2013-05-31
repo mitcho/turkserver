@@ -31,8 +31,6 @@ Results for your experiment will be saved into turkserver's `data` directory, in
 ## Preflight todo
 
 * create test page
-* cookie workers with faux WorkerId
-* assign to random list
 * make sure multiple submissions with the same assignmentId is denied
 * add missing MTurk fields in results files
 

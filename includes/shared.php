@@ -17,11 +17,6 @@ if ( defined( 'DEBUG' ) && DEBUG ) {
 	ini_set('display_errors', true);	
 }
 
-// set APPURL
-if ( !defined( 'APPURL' ) )
-	define( 'APPURL', dirname($_SERVER['SCRIPT_NAME']) );
-// set APPPATH
-if ( !defined( 'APPPATH' ) )
-	define( 'APPPATH', dirname($_SERVER['SCRIPT_NAME']) );
-
 require_once( APPDIR . '/includes/functions.php' );
+
+set_global_cookie();

@@ -9,6 +9,11 @@ if ( empty($_SERVER['REQUEST_URI']) || $_SERVER['REQUEST_URI'] == '/' )
 // parse URL
 $experiment_name = preg_replace( '!^' . APPPATH . '(.*?)/?$!', '$1', $_SERVER['REQUEST_URI'] );
 
+if ( defined('ENABLE_TEST') && ENABLE_TEST && $experiment_name == 'test' ) {
+	print_test_page();
+	exit;
+}
+
 if ( !experiment_files_exist( $experiment_name ) )
 	die( 'Experiment not found! Please check your URL.' );
 
@@ -20,18 +25,16 @@ $csv_file = 'data/' . $experiment_name . '.csv';
 $template_file = 'data/' . $experiment_name . '.html';
 
 // now we have an experiment.
-// todo: read the lists
-// todo: choose a random list
-$list_number = 0;
-
-// todo: cookie the "worker"
+// get the active list number:
+// note that list_number() may have to set a cookie, so no output should occur before this point.
+$list_number = list_number( $experiment_name );
 // todo later: setting for whether multiple lists should be allowed?
 
 // save submission
 // todo: make sure multiple submissions with the same assignmentId is denied
 if ( isset($_POST['assignmentId']) ) {
 	$data = array();
-	$data['WorkerId'] = new_worker_id();
+	$data['WorkerId'] = $cookie['workderid'];
 	$data['AssignmentId'] = $_POST['assignmentId'];
 	// todo: other fields from turk?
 
@@ -51,14 +54,12 @@ if ( isset($_POST['assignmentId']) ) {
 	exit;
 }
 	
-
 // print survey
 $html = construct_experiment( $experiment_name, $list_number );
 
-// todo: make TITLE include some title info from the db
 echo '<html><head><title>' . $experiment['title'] . '</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/></head><body>';
 
-echo '<form name="mturk_form" method="post" id="mturk_form" action="' . APPURL . $experiment_name . '"><input type="hidden" value="' . new_assignment_id() . '" name="assignmentId" id="assignmentId" />';
+echo '<form name="mturk_form" method="post" id="mturk_form" action="' . APPURL . $experiment_name . '"><input type="hidden" value="' . new_id() . '" name="assignmentId" id="assignmentId" />';
 
 echo $html;
 

@@ -1,11 +1,12 @@
 <?php
 
-function new_worker_id() {
-	// todo cookie workers?
-	return uniqid('turkserver');
+function print_test_page() {
+	global $cookie;
+	// todo: check for $_COOKIE global
+	// Tell your server administrator (hosting provider) to allow the $_COOKIE superglobal by changing <a href='http://www.php.net/manual/en/ini.core.php#ini.variables-order'>PHP's variables_order setting</a>.
 }
 
-function new_assignment_id() {
+function new_id() {
 	return uniqid('turkserver');
 }
 
@@ -65,23 +66,86 @@ function construct_experiment( $experiment_name, $list_number ) {
 	return $html;
 }
 
-function read_data( $experiment_name, $list_number = false ) {
-	if ( !file_exists( APPDIR . '/data/' . $experiment_name . '.csv' ) ||
-		!is_readable( APPDIR . '/data/' . $experiment_name . '.csv' ) )
-		die( "Error: data file could not be loaded." );
-	$csv = file( APPDIR . '/data/' . $experiment_name . '.csv' );
+function set_global_cookie() {
+	global $cookie;
 
-	$data = array();
-	$keys = false;
-	foreach ( $csv as $n => $row ) {
-		if ( empty($row) )
-			continue;
-		$row_data = str_getcsv( $row, ',', '"', '\\' );
-		if ( !$keys )
-			$keys = $row_data;
-		else
-			$data[] = array_combine( $keys, $row_data );
+	if ( !isset($_COOKIE) )
+		die( "Error: COOKIE superglobal could not be read." );
+	if ( isset($_COOKIE[COOKIE_NAME]) )
+		$cookie = $_COOKIE[COOKIE_NAME];
+	else
+		$cookie = array();		
+	
+	if ( !isset($cookie['workerid']) ) {
+		$id = new_id();
+		setcookie(COOKIE_NAME . "[workerid]", $id, COOKIE_EXPIRE, COOKIE_PATH, COOKIE_DOMAIN);
+		$cookie['workerid'] = $id;
 	}
+	
+	if ( !isset($cookie['experiments']) || !is_array($cookie['experiments']) )
+		$cookie['experiments'] = array();
+}
+
+function list_number( $experiment_name ) {
+	global $cookie;
+		
+	// if the cookie specifies a list, return that:
+	if ( isset($cookie['experiments'][$experiment_name]) )
+		return $cookie['experiments'][$experiment_name];
+
+	// pick a random list number:
+	$list_numbers = array_keys(read_data( $experiment_name ));
+	$index = rand(0, count($list_numbers) - 1);
+	$list_number = $list_numbers[$index];
+
+	setcookie(COOKIE_NAME . "[experiments][{$experiment_name}]", $list_number,
+		COOKIE_EXPIRE, COOKIE_PATH, COOKIE_DOMAIN);
+	$cookie['experiments'][$experiment_name] = $list_number;
+
+	return $list_number;
+}
+
+function random_list( $experiment_name ) {
+	$list_numbers = array_keys(read_data( $experiment_name ));
+	$index = rand(0, count($list_numbers) - 1);
+	return $list_numbers[$index];
+}
+
+function read_data( $experiment_name, $list_number = false ) {
+	static $data_cache;
+	if ( !isset($data_cache) )
+		$data_cache = array();
+
+	// if not cached:
+	if ( !isset($data_cache[$experiment_name]) ) {
+		if ( !file_exists( APPDIR . '/data/' . $experiment_name . '.csv' ) ||
+			!is_readable( APPDIR . '/data/' . $experiment_name . '.csv' ) )
+			die( "Error: data file could not be loaded." );
+		$csv = file( APPDIR . '/data/' . $experiment_name . '.csv' );
+
+		$data = array();
+		$keys = false;
+		foreach ( $csv as $n => $row ) {
+			if ( empty($row) )
+				continue;
+			$row_data = str_getcsv( $row, ',', '"', '\\' );
+			if ( !$keys ) {
+				$keys = $row_data;
+			} else {
+				$keyed_row_data = array_combine( $keys, $row_data );
+				if ( !isset($keyed_row_data['list']) )
+					die( "Error: data file does not have a list column." );
+				$this_list_number = intval($keyed_row_data['list']);
+				$keyed_row_data['list'] = $this_list_number;
+				if ( isset($data[$this_list_number]) )
+					die( "Error: the data file has multiple list #{$this_list_number}s" );
+				$data[$this_list_number] = $keyed_row_data;
+			}
+		}
+
+		$data_cache[$experiment_name] = $data;
+	}
+	$data = $data_cache[$experiment_name];
 
 	if ( $list_number !== false ) {
 		if ( !isset($data[$list_number]) )
