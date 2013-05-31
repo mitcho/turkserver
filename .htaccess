@@ -1,8 +1,17 @@
-# RewriteEngine is required.
-# Everything is routed through index.php
-RewriteEngine on
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^(.*)$ index.php
+SetEnv HTTP_READ_HTACCESS On
+
+<IfModule mod_rewrite.c>
+
+	# Tell PHP that the mod_rewrite module is ENABLED.
+	SetEnv HTTP_MOD_REWRITE On
+
+	# RewriteEngine is required.
+	# Everything is routed through index.php
+	RewriteEngine on
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteRule ^(.*)$ index.php
+
+</IfModule>
 
 Options -Indexes
 
