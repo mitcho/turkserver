@@ -9,10 +9,8 @@ if ( empty($_SERVER['REQUEST_URI']) || $_SERVER['REQUEST_URI'] == '/' )
 // parse URL
 $experiment_name = preg_replace( '!^' . APPPATH . '(.*?)/?$!', '$1', $_SERVER['REQUEST_URI'] );
 
-if ( defined('ENABLE_TEST') && ENABLE_TEST && $experiment_name == 'test' ) {
+if ( defined('ENABLE_TEST') && ENABLE_TEST && $experiment_name == 'index.php' )
 	print_test_page();
-	exit;
-}
 
 if ( !experiment_files_exist( $experiment_name ) )
 	die( 'Experiment not found! Please check your URL.' );

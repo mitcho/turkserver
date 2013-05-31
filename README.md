@@ -1,12 +1,12 @@
 turkserver
 ==========
 
-Turkserver hosts Amazon Mechanical Turk (AMT)-style surveys on your own server. Does not handle users, payment, etc. Requires an Apache web server with PHP 5 or higher.
+Turkserver hosts Amazon Mechanical Turk (AMT)-style surveys on your own server. Does not handle users, payment, etc. Requires an Apache web server with PHP 5.3 or higher.
 
 ## Installation
 
 1. Copy the `turkserver` folder onto your server. The "turkserver" folder name will become part of survey URLs, so change the name of the directory if you like.
-2. Point your browser to the test page, at `http://server/.../turkserver/test`. This page will check to make sure that turkserver is installed properly.
+2. Point your browser to the test page, at `http://server/.../turkserver/index.php`. This page will check to make sure that turkserver is installed properly.
 3. Start hosting experiments! See "usage" below.
 
 ## Usage
@@ -30,7 +30,6 @@ Results for your experiment will be saved into turkserver's `data` directory, in
 
 ## Preflight todo
 
-* create test page
 * make sure multiple submissions with the same assignmentId is denied
 * add missing MTurk fields in results files
 

@@ -1,9 +1,64 @@
 <?php
 
-function print_test_page() {
+function config_health() {
+	if ( !file_exists('config.php') ) {
+		if ( !copy('config.sample.php', 'config.php') )
+			return 'The config file <code>config.php</code> could not be created. Please copy the sample config file <code>config.sample.php</code> to <code>config.php</code>.';
+	}
+	return true;
+}
+
+function server_health() {
+	if ( !version_compare(phpversion(), '5.3', '>=') )
+		return 'PHP 5.3 or later is required!';
+
+	# These flags are set in htaccess
+	if ( !array_key_exists('HTTP_READ_HTACCESS', $_SERVER) )
+		return 'The .htaccess file is not being read!';
+	if ( !array_key_exists('HTTP_MOD_REWRITE', $_SERVER) )
+		return 'Apache mod_rewrite is required!';
+	
+	return true;
+}
+
+function experiment_meta_health() {
+	if ( !file_exists( EXPERIMENTS_META_FILE ) ) {
+		touch( EXPERIMENTS_META_FILE );
+		if ( !file_exists( EXPERIMENTS_META_FILE ) )
+			return 'Experiment meta file could not be created!';
+	}
+	
+	if ( !is_readable( EXPERIMENTS_META_FILE ) )
+		return 'Experiment meta file could not be read!';
+	if ( !is_writable( EXPERIMENTS_META_FILE ) )
+		return 'Experiment meta file cannot be written to!';
+	
+	$data = parse_ini_file( EXPERIMENTS_META_FILE, true );
+	if ( is_array($data) === false )
+		return 'Experiment meta file could not be read as an INI file!';
+	
+	return true;
+}
+
+function data_health() {
+	if ( !is_dir('data') )
+		return 'Data directory does not exist!';
+	if ( !is_writable('data') )
+		return 'Data directory cannot be written to!';
+	return true;
+}
+
+function cookie_health() {
 	global $cookie;
-	// todo: check for $_COOKIE global
-	// Tell your server administrator (hosting provider) to allow the $_COOKIE superglobal by changing <a href='http://www.php.net/manual/en/ini.core.php#ini.variables-order'>PHP's variables_order setting</a>.
+	
+	if ( !isset($_COOKIE) || !is_array($_COOKIE) )
+		return '$_COOKIE superglobal could not be read!';
+	if ( !isset($_COOKIE[COOKIE_NAME]) || !isset($_COOKIE[COOKIE_NAME]) )
+		return 'Cookies saving could not be verified! Please refresh the page.';
+	if ( $_COOKIE[COOKIE_NAME]['workerid'] !== $cookie['workerid'] )
+		return 'Cookies are not being saved correctly! This may be a browser issue.';
+
+	return true;
 }
 
 function new_id() {
@@ -20,17 +75,11 @@ function experiment_files_exist( $experiment ) {
 function experiment_metadata( $experiment = false ) {
 	global $defaults;
 	
-	if ( !file_exists( EXPERIMENTS_META_FILE ) ) {
-		touch( EXPERIMENTS_META_FILE );
-		if ( !file_exists( EXPERIMENTS_META_FILE ) )
-			die( 'Experiment meta file could not be created!' );
-	}
-	
-	if ( !is_readable( EXPERIMENTS_META_FILE ) )
-		die( 'Experiment meta file could not be read!' );
-	
+	$meta_health = experiment_meta_health();
+	if ( $meta_health !== true )
+		die( "Error: " . $meta_health );
 	$data = parse_ini_file( EXPERIMENTS_META_FILE, true );
-	
+		
 	if ( $experiment === false )
 		return $data;
 	
@@ -177,4 +226,9 @@ function record_results( $experiment_name, $data ) {
 	// ... the question is, what happens if it doesn't match?
 	fputcsv( $results, $data );
 	fclose( $results );
+}
+
+function print_test_page() {
+	require('includes/test.php');
+	exit;
 }

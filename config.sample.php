@@ -4,6 +4,10 @@
 // Do not modify config.sample.php. Instead, copy to config.php and modify config.php.
 // If config.php exists, settings are read from config.php, not config.sample.php.
 
+/* The test page */
+// set to false to disable the test page:
+define( 'ENABLE_TEST', true );
+
 /* Experiment defaults */
 $defaults = array(
 	'status' => 'active', // default state for experiments
@@ -15,7 +19,6 @@ $defaults = array(
 
 /* Advanced settings */
 define( 'DEBUG', false ); // set to true for debug mode
-define( 'ENABLE_TEST', true ); // set to false to disable the test page at /test
 define( 'EXPERIMENTS_META_FILE', 'experiments_meta.ini' ); // file name for experiment metadata
 
 /* Environment settings */
