@@ -1,22 +1,5 @@
 <?php
 
-function new_experiment_id() {
-	global $db;
-
-	$unique = false;
-	while ( !$unique ) {
-		$id = uniqid(); // returns 13 digit alphanumeric id
-	
-		$db->query( "select * from experiments where hash = '" . $db->real_escape_string($id) . "'" );
-		if ( !$db->use_result() ) {
-			$unique = true;
-		}
-	}
-	// danger of infinite loop. todo: limit to some number of tries?
-	
-	return $id;
-}
-
 function new_worker_id() {
 	// todo cookie workers?
 	return uniqid('turkserver');
@@ -26,13 +9,50 @@ function new_assignment_id() {
 	return uniqid('turkserver');
 }
 
-function construct_experiment( $filename, $list ) {
-	if ( !file_exists( APPDIR . '/data/' . $filename . '.html' ) ||
-		!is_readable( APPDIR . '/data/' . $filename . '.html' ) )
-		die( "Error: template file could not be loaded." );
-	$template = file_get_contents( APPDIR . '/data/' . $filename . '.html' );
+function experiment_files_exist( $experiment ) {
+	return 
+		file_exists('data/' . $experiment . '.csv') &&
+		is_readable('data/' . $experiment . '.csv') &&
+		file_exists('data/' . $experiment . '.html') &&
+		is_readable('data/' . $experiment . '.html');
+}
+function experiment_metadata( $experiment = false ) {
+	global $defaults;
 	
-	$fields = read_data( $filename, $list );
+	if ( !file_exists( EXPERIMENTS_META_FILE ) ) {
+		touch( EXPERIMENTS_META_FILE );
+		if ( !file_exists( EXPERIMENTS_META_FILE ) )
+			die( 'Experiment meta file could not be created!' );
+	}
+	
+	if ( !is_readable( EXPERIMENTS_META_FILE ) )
+		die( 'Experiment meta file could not be read!' );
+	
+	$data = parse_ini_file( EXPERIMENTS_META_FILE, true );
+	
+	if ( $experiment === false )
+		return $data;
+	
+	if ( !isset($data[$experiment]) ) {
+		$new_entry = "[{$experiment}]\n" .
+			"status = \"{$defaults['status']}\"\n" .
+			"title = \"{$defaults['title']}\"\n" . 
+			"thanks = \"{$defaults['thanks']}\"\n" .
+			"\n";
+		file_put_contents( EXPERIMENTS_META_FILE, $new_entry, FILE_APPEND | LOCK_EX );
+		return $defaults;
+	}
+	
+	return $data[$experiment];
+}
+
+function construct_experiment( $experiment_name, $list_number ) {
+	if ( !file_exists( APPDIR . '/data/' . $experiment_name . '.html' ) ||
+		!is_readable( APPDIR . '/data/' . $experiment_name . '.html' ) )
+		die( "Error: template file could not be loaded." );
+	$template = file_get_contents( APPDIR . '/data/' . $experiment_name . '.html' );
+	
+	$fields = read_data( $experiment_name, $list_number );
 
 	$template_fields = preg_replace( '!^.*$!', '\\${$0}', array_keys($fields) );
 	$html = str_replace( $template_fields, array_values($fields), $template );
@@ -45,11 +65,11 @@ function construct_experiment( $filename, $list ) {
 	return $html;
 }
 
-function read_data( $filename, $list = false ) {
-	if ( !file_exists( APPDIR . '/data/' . $filename . '.csv' ) ||
-		!is_readable( APPDIR . '/data/' . $filename . '.csv' ) )
+function read_data( $experiment_name, $list_number = false ) {
+	if ( !file_exists( APPDIR . '/data/' . $experiment_name . '.csv' ) ||
+		!is_readable( APPDIR . '/data/' . $experiment_name . '.csv' ) )
 		die( "Error: data file could not be loaded." );
-	$csv = file( APPDIR . '/data/' . $filename . '.csv' );
+	$csv = file( APPDIR . '/data/' . $experiment_name . '.csv' );
 
 	$data = array();
 	$keys = false;
@@ -63,18 +83,26 @@ function read_data( $filename, $list = false ) {
 			$data[] = array_combine( $keys, $row_data );
 	}
 
-	if ( $list !== false ) {
-		if ( !isset($data[$list]) )
-			die("Error: list cannot be found in data.");
+	if ( $list_number !== false ) {
+		if ( !isset($data[$list_number]) )
+			die("Error: list {$list_number} cannot be found in data.");
 
-		return $data[$list];
+		return $data[$list_number];
 	}
 
 	return $data;
 }
 
-function record_results( $filename, $data ) {
-	$results = fopen( APPDIR . '/data/' . $filename . '.results.csv', 'a+' );
+function record_results( $experiment_name, $data ) {
+	$filename = APPDIR . '/data/' . $experiment_name . '.results.csv';
+
+	if ( !file_exists($filename) ) {
+		touch( APPDIR . '/data/' . $experiment_name . '.results.csv' );
+		if ( !file_exists($filename) )
+			die("Results file could not be created!");
+	}
+
+	$results = fopen( $filename, 'a+' );
 	
 	// if this is a new file, add the field names first:
 	$stat = fstat($results);

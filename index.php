@@ -4,31 +4,28 @@ require_once( 'includes/shared.php' );
 
 if ( empty($_SERVER['REQUEST_URI']) || $_SERVER['REQUEST_URI'] == '/' )
 	die("Nothing to see here. Please move along.");
+	// todo: add option for listing active experiments
 
 // parse URL
-$path = preg_replace( '!^' . APPPATH . '(.*?)/?$!', '$1', $_SERVER['REQUEST_URI'] );
+$experiment_name = preg_replace( '!^' . APPPATH . '(.*?)/?$!', '$1', $_SERVER['REQUEST_URI'] );
 
+if ( !experiment_files_exist( $experiment_name ) )
+	die( 'Experiment not found! Please check your URL.' );
 
-// look for matching experiment
-$result = $db->query( "select * from experiments where hash = '" . $db->real_escape_string($path) . "' limit 1" );
-$row = $result->fetch_object();
-if ( !$row )
-	die("Survey not found.");
+$experiment = experiment_metadata( $experiment_name );
+if ( $experiment['status'] !== 'active' )
+	die( 'Experiment is not active.' );
 
+$csv_file = 'data/' . $experiment_name . '.csv';
+$template_file = 'data/' . $experiment_name . '.html';
 
-// if the list is empty, redirect to an individual list URL
-if ( empty($row->list) ) {
-	$result = $db->query( "select * from experiments where filename = '" . $db->real_escape_string($row->filename) . "' and list is not null order by rand() limit 1" );
-	
-	$row = $result->fetch_object();
-	if ( !$row )
-		die( "Error: List could not be chosen." );
-	
-	header( 'Location: ' . APPURL . $row->hash );
-	
-	exit;
-}
+// now we have an experiment.
+// todo: read the lists
+// todo: choose a random list
+$list_number = 0;
 
+// todo: cookie the "worker"
+// todo later: setting for whether multiple lists should be allowed?
 
 // save submission
 // todo: make sure multiple submissions with the same assignmentId is denied
@@ -38,7 +35,7 @@ if ( isset($_POST['assignmentId']) ) {
 	$data['AssignmentId'] = $_POST['assignmentId'];
 	// todo: other fields from turk?
 
-	foreach ( read_data( $row->filename, $row->list ) as $key => $value ) {
+	foreach ( read_data( $experiment_name, $list_number ) as $key => $value ) {
 		$data['Input.' . $key] = $value;
 	}
 
@@ -48,20 +45,20 @@ if ( isset($_POST['assignmentId']) ) {
 		$data['Answer.' . $key] = $value;
 	}
 	
-	record_results( $row->filename, $data );
+	record_results( $experiment_name, $data );
 
-	echo '<html><head><title>' . TITLE . '</title></head><body>' . THANKS . '</body>';
+	echo '<html><head><title>' . $experiment['thanks'] . '</title></head><body>' . $experiment['thanks'] . '</body></html>';
 	exit;
 }
 	
 
 // print survey
-$html = construct_experiment( $row->filename, $row->list );
+$html = construct_experiment( $experiment_name, $list_number );
 
 // todo: make TITLE include some title info from the db
-echo '<html><head><title>' . TITLE . '</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/></head><body>';
+echo '<html><head><title>' . $experiment['title'] . '</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/></head><body>';
 
-echo '<form name="mturk_form" method="post" id="mturk_form" action="' . APPURL . $row->hash . '"><input type="hidden" value="' . new_assignment_id() . '" name="assignmentId" id="assignmentId" />';
+echo '<form name="mturk_form" method="post" id="mturk_form" action="' . APPURL . $experiment_name . '"><input type="hidden" value="' . new_assignment_id() . '" name="assignmentId" id="assignmentId" />';
 
 echo $html;
 
