@@ -154,12 +154,6 @@ function list_number( $experiment_name ) {
 	return $list_number;
 }
 
-function random_list( $experiment_name ) {
-	$list_numbers = array_keys(read_data( $experiment_name ));
-	$index = rand(0, count($list_numbers) - 1);
-	return $list_numbers[$index];
-}
-
 function read_data( $experiment_name, $list_number = false ) {
 	static $data_cache;
 	if ( !isset($data_cache) )
