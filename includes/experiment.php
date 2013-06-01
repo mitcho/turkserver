@@ -57,3 +57,4 @@ echo str_replace( $template_fields, array_values($fields), $template );
 </form>
 </body>
 </html>
+<?php exit; ?>

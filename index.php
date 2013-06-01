@@ -22,7 +22,7 @@ if ( $experiment['status'] !== 'active' )
 
 // save submission:
 if ( isset($_POST['assignmentId']) )
-	save_page( $experiment_name, $experiment );
+	require( 'includes/save.php' );
 
 // Now we're going to display an experiment.
 	
