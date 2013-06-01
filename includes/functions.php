@@ -96,25 +96,6 @@ function experiment_metadata( $experiment = false ) {
 	return $data[$experiment];
 }
 
-function construct_experiment( $experiment_name, $list_number ) {
-	if ( !file_exists( APPDIR . '/data/' . $experiment_name . '.html' ) ||
-		!is_readable( APPDIR . '/data/' . $experiment_name . '.html' ) )
-		die( "Error: template file could not be loaded." );
-	$template = file_get_contents( APPDIR . '/data/' . $experiment_name . '.html' );
-	
-	$fields = read_data( $experiment_name, $list_number );
-
-	$template_fields = preg_replace( '!^.*$!', '\\${$0}', array_keys($fields) );
-	$html = str_replace( $template_fields, array_values($fields), $template );
-	$html .= '<p><input type="submit" id="submitButton" value="Submit" /></p>';
-	
-	// used by MTurk:
-	// $html .= "<script type='text/javascript' src='https://s3.amazonaws.com/mturk-public/externalHIT_v1.js'></script>";
-	// $html .= '<script language="Javascript">turkSetAssignmentID();</script>';
-
-	return $html;
-}
-
 function set_global_cookie() {
 	global $cookie;
 
