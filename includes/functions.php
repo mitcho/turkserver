@@ -176,13 +176,7 @@ function read_data( $experiment_name, $list_number = false ) {
 				$keys = $row_data;
 			} else {
 				$keyed_row_data = array_combine( $keys, $row_data );
-				if ( !isset($keyed_row_data['list']) )
-					die( "Error: data file does not have a list column." );
-				$this_list_number = intval($keyed_row_data['list']);
-				$keyed_row_data['list'] = $this_list_number;
-				if ( isset($data[$this_list_number]) )
-					die( "Error: the data file has multiple list #{$this_list_number}s" );
-				$data[$this_list_number] = $keyed_row_data;
+				$data[] = $keyed_row_data;
 			}
 		}
 
