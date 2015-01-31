@@ -1,7 +1,7 @@
 turkserver
 ==========
 
-Turkserver hosts Amazon Mechanical Turk (AMT)-style surveys on your own server. Does not handle users, payment, etc. Requires an Apache web server with PHP 5.3 or higher.
+Turkserver hosts Amazon Mechanical Turk (AMT)-style surveys on your own server. Does not handle users, payment, etc. Requires an Apache web server with PHP 5.3 or higher. Part of the [turktools](http://turktools.net) project.
 
 ## Installation
 
@@ -42,7 +42,7 @@ Additional flags can be set here too. Currently the only such flag is `add_extra
 
 Contributions are welcome! Bug reports, feedback, documentation improvements, and code changes are all welcome forms of contributions. Thank you (in advance) for making turkserver better for everyone.
 
-turkserver is developed [on GitHub](https://github.com/mitcho/turktools). Please submit bug reports and feedback requests on the [turkserver issue tracker](https://github.com/mitcho/turkserver/issues). Patches can be submitted via [*pull request*](https://help.github.com/articles/using-pull-requests).
+turkserver is developed [on GitHub](https://github.com/mitcho/turkserver). Please submit bug reports and feedback requests on the [turkserver issue tracker](https://github.com/mitcho/turkserver/issues). Patches can be submitted via [*pull request*](https://help.github.com/articles/using-pull-requests).
 
 ## Change log
 
