@@ -48,6 +48,12 @@ $fields = read_data( $experiment_name, $list_number );
 ?>
 <input type="hidden" value="<?php echo $list_number;?>" name="turkserver[list_number]" id="turkserver_list_number" />
 
+<?php 
+// Add "hidden" fields corresponding to all inputs, to make sure that even unchecked
+// radio and check boxes show up in the POST data.
+// Based on a trick by Ozh: http://planetozh.com/blog/2008/09/posting-unchecked-checkboxes-in-html-forms/
+print_hidden_fields_block( $template ); ?>
+
 <?php
 $template_fields = preg_replace( '!^.*$!', '\\${$0}', array_keys($fields) );
 echo str_replace( $template_fields, array_values($fields), $template );

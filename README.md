@@ -44,9 +44,13 @@ Contributions are welcome! Bug reports, feedback, documentation improvements, an
 
 turkserver is developed [on GitHub](https://github.com/mitcho/turktools). Please submit bug reports and feedback requests on the [turkserver issue tracker](https://github.com/mitcho/turkserver/issues). Patches can be submitted via [*pull request*](https://help.github.com/articles/using-pull-requests).
 
+## Change log
+
+* 20150131: ensure that blanks are recorded for unanswered fields. Thanks to Juliet Stanton for bringing this issue to our attention.
+
 ## The MIT License (MIT)
 
-Copyright (c) 2013 Michael Yoshitaka Erlewine <mitcho@mitcho.com> and contributors
+Copyright (c) 2013--2015 Michael Yoshitaka Erlewine <mitcho@mitcho.com> and contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
