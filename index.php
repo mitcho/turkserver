@@ -7,7 +7,7 @@ if ( empty($_SERVER['REQUEST_URI']) || $_SERVER['REQUEST_URI'] == '/' )
 	// todo: add option for listing active experiments
 
 // parse URL
-$experiment_name = preg_replace( '!^' . APPPATH . '(.*?)/?$!', '$1', $_SERVER['REQUEST_URI'] );
+$experiment_name = preg_replace( '!^' . APPPATH . '/?(.*?)/?$!', '$1', $_SERVER['REQUEST_URI'] );
 
 // display test page:
 if ( defined('ENABLE_TEST') && ENABLE_TEST && $experiment_name == 'index.php' )

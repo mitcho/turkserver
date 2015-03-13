@@ -8,8 +8,8 @@ if ( !defined('APPDIR') )
 <style>
 .entry { height: 30px; vertical-align: middle; padding: 5px; }
 .icon { width: 30px; height: 30px; background-repeat: no-repeat; float: left; padding-right: 10px; margin-top: -7px; }
-.icon.good { background-image: url(../includes/good.png) }
-.icon.bad { background-image: url(../includes/bad.png) }
+.icon.good { background-image: url(<?php echo rtrim(APPPATH,'/'); ?>/includes/good.png) }
+.icon.bad { background-image: url(<?php echo rtrim(APPPATH,'/'); ?>/includes/bad.png) }
 </style>
 </head><body>
 <h1>turkserver test page</h1>
